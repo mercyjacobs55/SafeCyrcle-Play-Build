@@ -1,0 +1,50 @@
+workflows:
+  safecyrcle-aab:
+    name: SafeCyrcle AAB
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      java: 21
+      node: 22
+    scripts:
+      - name: Extract exact Floot Android export
+        script: |
+          set -euo pipefail
+          ZIP="$CM_BUILD_DIR/mobile-builds-1790323304133bfcd0286-cdc8-4128-a9bf-0b1cb41fee7f_042433.zip"
+          test -f "$ZIP"
+          rm -rf "$CM_BUILD_DIR/floot-export"
+          mkdir -p "$CM_BUILD_DIR/floot-export"
+          unzip -q "$ZIP" -d "$CM_BUILD_DIR/floot-export"
+          cd "$CM_BUILD_DIR/floot-export"
+          test -f package.json
+          test -f pnpm-lock.yaml
+          test -x android/gradlew
+      - name: Install locked pnpm dependencies
+        script: |
+          set -euo pipefail
+          cd "$CM_BUILD_DIR/floot-export"
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+          pnpm install --frozen-lockfile
+          test -d node_modules/@capgo/native-purchases/android
+      - name: Prepare Capacitor Android
+        script: |
+          set -euo pipefail
+          cd "$CM_BUILD_DIR/floot-export"
+          pnpm exec cap sync android
+      - name: Verify Play identity and billing
+        script: |
+          set -euo pipefail
+          cd "$CM_BUILD_DIR/floot-export"
+          grep -q 'applicationId "com.n30c.safecyrcle"' android/app/build.gradle
+          grep -q 'versionCode 7' android/app/build.gradle
+          grep -Rqs 'com.android.vending.BILLING' android/app/src/main/AndroidManifest.xml android/capacitor-cordova-android-plugins/src/main/AndroidManifest.xml
+          test -f node_modules/@capgo/native-purchases/android/build.gradle
+      - name: Build release Android App Bundle
+        script: |
+          set -euo pipefail
+          cd "$CM_BUILD_DIR/floot-export/android"
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace bundleRelease
+    artifacts:
+      - floot-export/android/app/build/outputs/bundle/release/*.aab
