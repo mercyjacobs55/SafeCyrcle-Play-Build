@@ -26,7 +26,8 @@ workflows:
           
           
   
-          COREPACK_ENABLE_PROJECT_SPEC=0 pnpm install --no-frozen-lockfile
+          corepack install --global pnpm@12.7.0
+          COREPACK_ENABLE_PROJECT_SPEC=0 pnpm install --no-frozen-lockfile --allow-build=@swc/core --allow-build=esbuild --allow-build=sharp
           test -d node_modules/@capgo/native-purchases/android
       - name: Prepare Capacitor Android
         script: |
