@@ -34,7 +34,7 @@ workflows:
           set -euo pipefail
           cd "$CM_BUILD_DIR/floot-export"
           
-          COREPACK_ENABLE_PROJECT_SPEC=0 pnpm exec cap sync android
+          
       - name: Verify Play identity and billing
         script: |
           set -euo pipefail
