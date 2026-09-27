@@ -19,6 +19,7 @@ workflows:
           test -f package.json
           test -f pnpm-lock.yaml
           test -x android/gradlew
+          sed -i.bak '/^[[:space:]]*android\.aapt2FromMavenOverride=/d' android/gradle.properties
       - name: Install locked pnpm dependencies
         script: |
           set -euo pipefail
