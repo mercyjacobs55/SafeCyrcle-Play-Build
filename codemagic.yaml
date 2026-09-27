@@ -24,7 +24,7 @@ workflows:
           set -euo pipefail
           cd "$CM_BUILD_DIR/floot-export"
           
-npm install --global pnpm@10.15.1
+          npm install --global pnpm@10.15.1
   
           pnpm install --frozen-lockfile
           test -d node_modules/@capgo/native-purchases/android
